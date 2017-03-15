@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!-- (c)taisukef CC BY  http://fukuno.jig.jp/ -->
+<html>
+<head>
+<meta charset='utf-8'/>
+<title>sakura web socket test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<script src="sakura-setting.js"></script>
+<script>
+
+var ws = null;
+var wst;
+
+window.onload = function() {
+	var setStatus = function(s) {
+		document.getElementById("status").textContent = s;
+	};
+	wst = setInterval(function(){
+		if (ws == null || ws.readyState != 1) {
+			ws = new WebSocket("wss://api.sakura.io/ws/v1/" + SAKURA_TOKEN);
+			ws.onmessage = function(e) {
+				console.log(e.data);
+			};
+			ws.onclose = function() {
+				setStatus("close");
+			};
+			ws.onopen = function() {
+				setStatus("open");
+			};
+			ws.onerror = function(event) {
+				setStatus("error");
+			};
+	    }
+	}, 500);
+	
+	var send = function(val) {
+		const obj = {
+			module: SAKURA_MODULE,
+			type: 'channels',
+			payload: { channels: [ { channel: 0, type: 'I', value: Number(val) } ] }
+		};
+		ws.send(JSON.stringify(obj));
+	};
+	
+	btnon.onclick = function() {
+		send(1);
+	};
+	btnoff.onclick = function() {
+		send(0);
+	};
+};
+
+</script>
+<style>
+body {
+	margin: 0px;
+	padding: 20px;
+	text-align: center;
+}
+#main {
+	font-size: 30px;
+}
+.btn {
+	padding: 4em;
+	margin: 1em;
+}
+#credit {
+	font-size: 12px;
+	margin-top: 20px;
+}
+a {
+	color: gray !important;
+}
+</style>
+</head>
+<body>
+
+<h2>WebSocket Status : <span id="status">wait</span></h2>
+<p>
+	<button class=btn id="btnon">ON</button>
+	<button class=btn id="btnoff">OFF</button>
+</p>
+
+<div id="credit">
+APP: <a href="http://fukuno.jig.jp/1487">CC BY fukuno.jig.jp</a><br>
+</div>
+</body>
+</html>
